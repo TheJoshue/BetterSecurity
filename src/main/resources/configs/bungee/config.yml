@@ -81,7 +81,9 @@ Manage_Tab_Complete:
   # Because it allows you to block the proxy command tablist.
   waterfall_prevention: false
 
-  # Can be also 'WHITELIST'.
+  # Here you can enter the type of method you want to use to block commands:
+  # - BLACKLIST | (The commands in the list will be blocked)
+  # - WHITELIST | (The commands in the list will be able to execute)
   method: 'BLACKLIST'
 
   # Tabbing of these commands will be targeted if groups mode is NOT enabled.
@@ -289,7 +291,9 @@ Manage_Commands:
   # For example AuthMeBungee (If you execute a blocked command before login, the plugin will overwrite it)
   force_check: false
 
-  # Can be also 'WHITELIST'.
+  # Here you can enter the type of method you want to use to block commands:
+  # - BLACKLIST | (The commands in the list will be blocked)
+  # - WHITELIST | (The commands in the list will be able to execute)
   method: 'BLACKLIST'
 
   # List of target commands according to the selected method.
