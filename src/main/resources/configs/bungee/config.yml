@@ -69,7 +69,7 @@ Settings:
 #  _  /_/ /_  / / /_/ / /__ _  ,<       _  /   / /_/ /_  /_/ /     / /___  / /_/ /  / / / / /_  /_/ /  / /  __/ /_ /  __/
 #  /_____/ /_/  \____/\___/ /_/|_|      /_/    \__,_/ /_.___/      \____/  \____//_/ /_/ /_/_  .___//_/  \___/\__/ \___/
 #                                                                                           /_/
-Block_Tab_Complete:
+Manage_Tab_Complete:
 
   # --------- < ⚠ > ---------
   # If you have BungeeCord, the use of Waterfall (https://papermc.io/) is recommended.
@@ -81,8 +81,11 @@ Block_Tab_Complete:
   # Because it allows you to block the proxy command tablist.
   waterfall_prevention: false
 
-  # Prevents tabbing of these commands, so as not to conflict with other plugins.
-  blacklisted_suggestions:
+  # Can be also 'WHITELIST'.
+  method: 'BLACKLIST'
+
+  # Tabbing of these commands will be targeted if groups mode is NOT enabled.
+  target_suggestions:
     - 'pl'
     - 'plugins'
     - 'ver'
@@ -103,7 +106,7 @@ Block_Tab_Complete:
   bypass:
     # Here you can enter what kind of bypass you prefer
     # to be able to perform the complete tab:
-    # - PERMISSION | (Bypass via permission: bettersecuritybungee.bypass.antitab)
+    # - PERMISSION | (Bypass via permission: bettersecuritybungee.bypass.tab)
     # - PLAYERS | (Bypass by player name)
     method: 'PERMISSION'
     # Tip. You can put both the player's name and his UUID.
@@ -111,8 +114,10 @@ Block_Tab_Complete:
       - 'playerName1'
       - '8667ba71-b85a-4004-af54-457a9734eed7'
 
-  whitelisted_suggestions:
+  groups_mode:
 
+    # By enabling the groups_mode, above options "method", "target_suggestions" and "bypass" will be fully ignored
+    # and instead you configure everything below with SO much more flexibility.
     enabled: true
 
     # If it is on "true", you will be able to tab the command much more conveniently!
@@ -127,27 +132,57 @@ Block_Tab_Complete:
 
     # This is the list of suggestions groups whitelisted in the complete tab.
     # In these groups you can put the following requirements:
-    # - required_server: <serverName> | (If you put this requirement, the group will go only for the specified server)
+    # - whitelisted_servers: ['server1', 'server2'] | (If you put this requirement, the group will go only for the specified server)
     # - required_permission: <permission> | (If you set this requirement, the group will go only for those who have the specified permission)
-    # - required_players: ['playername1', 'playername2'] | (If you put this requirement, the group will go only for the players in the list)
+    # - whitelisted_players: ['playername1', 'playername2'] | (If you put this requirement, the group will go only for the players in the list)
     # If you want to put multiple requirements in one group you can do it safely.
     # You can also ignore one or more servers in a group, by putting:
-    # - ignore_servers: ['server1', 'server2'] | (Servers that are in this list will not see group suggestions)
+    # - blacklisted_servers: ['server1', 'server2'] | (Servers that are in this list will not see group suggestions)
     groups:
+      # Besides "required_permission" option, there are permissions for each group.
+      # There can be used force-invert permissions:
+      # - bettersecurity.tab.<group_name_from_here>.INVERT
+      # * If the group here has "BLACKLIST" method && if player/group has this permission, this group will act like it is "WHITELIST" method only for them
+      # * If the group here has "WHITELIST" method && if player/group has this permission, this group will act like it is "BLACKLIST" method only for them
+      # There are also regular force permissions:
+      # - bettersecurity.tab.<group_name_from_here>.BLACKLIST | if player/group has this permission, this group will always act like it is "BLACKLIST" method only for them
+      # - bettersecurity.tab.<group_name_from_here>.WHITELIST | if player/group has this permission, this group will always act like it is "WHITELIST" method only for them
+
       # This is an example of a group with no requirements, suggestions inside this group will be seen by everyone.
+      # This name can be set to literally anything.
       global:
-        # List of whitelisted suggestions in complete tabs.
+        # Priority will declare how powerful this set of commands/suggestions is - HIGHER number means LOWER priority.
+        # For example, priority of this "global" group namespace is 1, which is the highest and it has BLACKLIST for command "/versions" (tab completion).
+        # Let's say that we have another group called "survival-whitelists" and there we have WHITELIST method with listed "/versions" command,
+        # but priority of that "survival-whitelists" group is set to "2". Because of this, the players won't be able to tab complete command "/versions",
+        # and they will only be if in this "global" group they are in some way bypassing it (by permission or whatever)
+        # The group can also not have priority and then it will be read from the top to bottom but having priority is recommended; groups can also
+        # have same priority as long as they not conflict with others
+        priority: 1
+        method: 'BLACKLIST'
+        # List of suggestions.
         suggestions:
-          - 'tell'
-          - 'msg'
-          - 'w'
-          - 'whisper'
-          - 't'
-          - 'r'
-          - 'reply'
+          - 'pl'
+          - 'plugins'
+          - 'ver'
+          - 'version'
+          - 'about'
+          - '?'
+          - 'help'
+          - 'bukkit:pl'
+          - 'bukkit:plugins'
+          - 'bukkit:ver'
+          - 'bukkit:version'
+          - 'bukkit:about'
+          - 'bukkit:?'
+          - 'bukkit:help'
+          - 'minecraft:?'
+          - 'minecraft:help'
       # In this example group, the hints will be shown on all servers, except the servers that have been skipped.
       spawn:
-        ignore_servers:
+        priority: 2
+        method: 'WHITELIST'
+        blacklisted_servers:
           - 'bedwars'
           - 'skywars'
         suggestions:
@@ -155,7 +190,11 @@ Block_Tab_Complete:
       # This is an example of a group that only requires one server.
       # The suggestions in this list will only be displayed by the requested server.
       lobby:
-        required_server: lobby
+        priority: 2
+        method: 'WHITELIST'
+        whitelisted_servers:
+          - 'lobby'
+          - 'hub'
         suggestions:
           - 'login'
           - 'l'
@@ -164,13 +203,18 @@ Block_Tab_Complete:
       # This is an example of a group that only requires one server and one permission.
       # The player who is inside that server, and has that permission, will see the suggestions listed.
       faction_vip:
-        required_server: faction
+        priority: 2
+        method: 'WHITELIST'
+        whitelisted_servers:
+          - 'faction'
         required_permission: 'bettersecuritybungee.tab.faction_vip'
         suggestions:
           - 'fly'
       # This is an example of a group that only requires a permit.
       # The player who has that permission will see this list of suggestions.
       staff:
+        priority: 2
+        method: 'WHITELIST'
         required_permission: 'bettersecuritybungee.tab.staff'
         suggestions:
           - 'tempban'
@@ -189,9 +233,11 @@ Block_Tab_Complete:
       # This is an example of a group that only requires a list of players.
       # Players in this list will see these suggestions.
       owner:
-        required_players:
+        #priority: 2
+        method: 'WHITELIST'
+        whitelisted_players:
           - 'playername1'
-          - 'playername2'
+          - '8667ba71-b85a-4004-af54-457a9734eed7'
         suggestions:
           - 'op'
           - 'deop'
@@ -232,30 +278,23 @@ Warnings:
 #  _  /_/ /_  / / /_/ / /__ _  ,<  _(__  )     / /___  / /_/ /  / / / / /  / / / / / /_/ /_  / / / /_/ / _(__  )
 #  /_____/ /_/  \____/\___/ /_/|_| /____/      \____/  \____//_/ /_/ /_//_/ /_/ /_/\__,_/ /_/ /_/\__,_/  /____/
 #
-Blocks_Commands:
+Manage_Commands:
 
   enabled: true
 
   # If it is on "true" the execution attempt warning will be sent to chat.
   warning: true
 
-  # Here you can enter the type of method you want to use to block commands:
-  # - BLACKLIST | (The commands in the list will be blocked)
-  # - WHITELIST | (The commands in the list will be able to execute)
-  method: 'BLACKLIST'
-
   # Forced checking if enabled can cause problems with other plugins.
   # For example AuthMeBungee (If you execute a blocked command before login, the plugin will overwrite it)
   force_check: false
 
-  # This message will be shown as soon as the command is blocked.
-  # < ? > You can find more information about the executors in the header.
-  executors:
-    - '[MESSAGE] %prefix%&cYou cannot execute this command!'
+  # Can be also 'WHITELIST'.
+  method: 'BLACKLIST'
 
-  # List of blocked or enabled commands according to the selected method.
+  # List of target commands according to the selected method.
   # If you want to block commands only through "server mode", just put "commands: []"
-  commands:
+  target_commands:
     - 'bungee'
     - 'waterfall'
     - 'pl'
@@ -275,33 +314,101 @@ Blocks_Commands:
     - 'minecraft:?'
     - 'minecraft:help'
 
+  # This message will be shown as soon as the command is blocked.
+  # < ? > You can find more information about the executors in the header.
+  executors:
+    - '[MESSAGE] %prefix%&cYou cannot execute this command!'
+
+  bypass:
+    # Here you can enter what kind of bypass you prefer
+    # to be able to perform the complete tab:
+    # - PERMISSION | (Bypass via permission: bettersecuritybungee.bypass.commands)
+    # - PLAYERS | (Bypass by player name)
+    method: 'PERMISSION'
+    # Tip. You can put both the player's name and his UUID.
+    players:
+      - 'playerName1'
+      - '8667ba71-b85a-4004-af54-457a9734eed7'
+
   # Server mode allows you to block commands based on the server the player is on.
-  server_mode:
+  groups_mode:
 
-    enabled: false
+    # By enabling the groups_mode, above options "method", "target_commands", "executors" and "bypass" will be fully ignored
+    # and instead you configure everything below with SO much more flexibility.
+    enabled: true
 
-    # This is the list of servers where commands are blocked.
-    servers:
-      # This is an example server.
-      lobby:
-        # < ? > The methods are the same that are located above.
+    # This is the list of suggestions groups whitelisted in the complete tab.
+    # In these groups you can put the following requirements:
+    # - whitelisted_servers: ['server1', 'server2'] | (If you put this requirement, the group will go only for the specified server)
+    # - required_permission: <permission> | (If you set this requirement, the group will go only for those who have the specified permission)
+    # - whitelisted_players: ['playername1', 'playername2'] | (If you put this requirement, the group will go only for the players in the list)
+    # If you want to put multiple requirements in one group you can do it safely.
+    # You can also ignore one or more servers in a group, by putting:
+    # - blacklisted_servers: ['server1', 'server2'] | (Servers that are in this list will not see group suggestions)
+    groups:
+      # Besides "required_permission" option, there are permissions for each group.
+      # There can be used force-invert permissions:
+      # - bettersecurity.tab.<group_name_from_here>.INVERT
+      # * If the group here has "BLACKLIST" method && if player/group has this permission, this group will act like it is "WHITELIST" method only for them
+      # * If the group here has "WHITELIST" method && if player/group has this permission, this group will act like it is "BLACKLIST" method only for them
+      # There are also regular force permissions:
+      # - bettersecurity.tab.<group_name_from_here>.BLACKLIST | if player/group has this permission, this group will always act like it is "BLACKLIST" method only for them
+      # - bettersecurity.tab.<group_name_from_here>.WHITELIST | if player/group has this permission, this group will always act like it is "WHITELIST" method only for them
+
+      # This is an example of a group with no requirements, commands inside this group will be applied for everyone.
+      # This name can be set to literally anything.
+      global:
+        # Priority will declare how powerful this set of commands/suggestions is - HIGHER number means LOWER priority.
+        # For example, priority of this "global" group namespace is 1, which is the highest and it has BLACKLIST for command "/versions" (tab completion).
+        # Let's say that we have another group called "survival-whitelists" and there we have WHITELIST method with listed "/versions" command,
+        # but priority of that "survival-whitelists" group is set to "2". Because of this, the players won't be able to tab complete command "/versions",
+        # and they will only be if in this "global" group they are in some way bypassing it (by permission or whatever)
+        # The group can also not have priority and then it will be read from the top to bottom but having priority is recommended; groups can also
+        # have same priority as long as they not conflict with others
+        priority: 2
         method: 'BLACKLIST'
-        # Instead these are the commands blocked on that server.
+        # List of suggestions.
         commands:
+          - 'tp *'
+          - 'tp * *'
           - 'examplecommand1'
-          - 'examplecommand2'
       # In this example you can use another message.
-      survival:
-        # < ? > The methods are the same that are located above.
-        method: 'BLACKLIST'
+      survival_cmdgroup1:
+        priority: 1
+        method: 'WHITELIST'
+        whitelisted_servers:
+          - 'survival'
         # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
         # Instead these are the commands blocked on that server.
         commands:
-          - 'examplecommand1'
+          - 'tp zS0bye'
           - 'examplecommand2'
+      survival_cmdgroup2:
+        priority: 2
+        method: 'WHITELIST'
+        # This executor will only be sent to this server.
+        # < ? > You can find more information about the executors in the header.
+        executors:
+          - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
+        # Instead these are the commands blocked on that server.
+        commands:
+          - 'examplecommand3'
+          - 'examplecommand4'
+
+# ! NOTE: Please take a look at examples above, specifically the groups called "global" and "survival_cmdgroup1".
+# We see that "global" has priority of 2 and "survival_cmdgroup1" has 1 - means that "survival_cmdgroup1" group is has greater priority than "global" group.
+# We see that "global" is applied globally (for any server because it do not have whitelisted/blacklisted server) and "survival_cmdgroup1" is applied only to server "survival".
+# We see that "global" has command "tp *" (blacklisted; that is group method) and "survival_cmdgroup1" has command "tp zS0bye" (whitelisted; that is group method) included.
+# * What will this mean is that if we are on any server (even "survival") we will NOT be able to execute "/tp <anyarg1>" or even "/tp <anyarg1> <anyarg2> <anyarg3>" or
+# however many arguments after base command; although we will be able to execute "/tp" command by itself (without any arguments).
+# * What we will ONLY BE ABLE to execute (using arguments) is "/tp zS0bye" and ONLY if we are on "survival" subserver because priority for "survival_cmdgroup1" is
+# greater than "global" and this specific commands is whitelisted in it (in "survival_cmdgroup1" group).
+# * What we also won't be able to execute is "/tp zS0bye <anyarghere>" or any more arguments after this specific command mentioned,
+# because we have "tp * *" blacklisted and it takes priority because we are more likely that we are trying to run "tp * *" rather than "tp zS0bye <whatever>" as that
+# second one is not declared anywhere and "tp * *" is.
 
 
 #  ________                               _____     _________                                         _________   ________
