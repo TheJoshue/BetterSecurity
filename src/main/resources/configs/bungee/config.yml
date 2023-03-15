@@ -86,7 +86,7 @@ Manage_Tab_Complete:
   # - WHITELIST | (The commands in the list will be able to execute)
   method: 'BLACKLIST'
 
-  # Tabbing of these commands will be targeted if groups mode is NOT enabled.
+  # This list will only be utilized if "groups_mode" below is NOT enabled.
   target_suggestions:
     - 'pl'
     - 'plugins'
@@ -296,8 +296,7 @@ Manage_Commands:
   # - WHITELIST | (The commands in the list will be able to execute)
   method: 'BLACKLIST'
 
-  # List of target commands according to the selected method.
-  # If you want to block commands only through "server mode", just put "commands: []"
+  # This list will only be utilized if "groups_mode" below is NOT enabled.
   target_commands:
     - 'bungee'
     - 'waterfall'
