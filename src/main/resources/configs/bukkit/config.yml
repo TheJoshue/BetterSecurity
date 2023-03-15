@@ -173,7 +173,7 @@ Manage_Tab_Complete:
         # have same priority as long as they not conflict with others
         priority: 1
         method: 'BLACKLIST'
-        # List of suggestions.
+        # List of group's suggestions.
         suggestions:
           - 'pl'
           - 'plugins'
@@ -424,7 +424,7 @@ Manage_Commands:
         # have same priority as long as they not conflict with others
         priority: 2
         method: 'BLACKLIST'
-        # List of suggestions.
+        # List of group's commands.
         commands:
           - 'tp *'
           - 'examplecommand1'
@@ -434,32 +434,26 @@ Manage_Commands:
         method: 'WHITELIST'
         whitelisted_worlds:
           - 'survival'
-        # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
-        # Instead these are the commands blocked on that server.
         commands:
           - 'tp zS0bye'
           - 'examplecommand2'
       cmdgroup2:
         priority: 3
         method: 'WHITELIST'
-        # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
-        # Instead these are the commands blocked on that server.
         commands:
           - 'tp * *'
       cmdgroup3:
         priority: 4
         method: 'WHITELIST'
-        # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
-        # Instead these are the commands blocked on that server.
         commands:
           - 'examplecommand3'
           - 'examplecommand4'
@@ -475,8 +469,8 @@ Manage_Commands:
 # greater than "global" and this specific command ("/tp zS0bye") is whitelisted within it ("cmdgroup1" group).
 # * What we also won't be able to execute is "/tp zS0bye <anyarghere>" or any more arguments after this specific command mentioned, because we
 # have "tp * *" blacklisted and it takes priority even if its group is set to have less priority than the group containing "tp zS0bye", this happens
-# because we are having 3 args BEING EXECUTED WITHIN THE ACTUAL COMMAND, and we are first searching for that amount of args in the group, and because "cmdgroup3"
-# group has our matched amount of args, the group "cmdgroup2" is not relevant because we will still do what "cmdgroup3" allows us to do.
+# because we are having 3 args BEING EXECUTED WITHIN THE ACTUAL COMMAND, and we are first searching for that amount of args in the group, and because "cmdgroup2"
+# group has our matched amount of args, the group "cmdgroup1" is not relevant because we will still do what "cmdgroup2" allows us to do.
 
 
 #  ______________           ______             _______       ______            _________                         ______
