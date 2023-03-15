@@ -427,7 +427,6 @@ Manage_Commands:
         # List of suggestions.
         commands:
           - 'tp *'
-          - 'tp * *'
           - 'examplecommand1'
       # In this example you can use another message.
       cmdgroup1:
@@ -435,22 +434,32 @@ Manage_Commands:
         method: 'WHITELIST'
         whitelisted_worlds:
           - 'survival'
-        # This executor will only be sent to this world.
+        # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
-        # Instead these are the commands blocked on that world.
+        # Instead these are the commands blocked on that server.
         commands:
           - 'tp zS0bye'
           - 'examplecommand2'
       cmdgroup2:
-        priority: 2
+        priority: 3
         method: 'WHITELIST'
-        # This executor will only be sent to this world.
+        # This executor will only be sent to this server.
         # < ? > You can find more information about the executors in the header.
         executors:
           - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
-        # Instead these are the commands blocked on that world.
+        # Instead these are the commands blocked on that server.
+        commands:
+          - 'tp * *'
+      cmdgroup3:
+        priority: 4
+        method: 'WHITELIST'
+        # This executor will only be sent to this server.
+        # < ? > You can find more information about the executors in the header.
+        executors:
+          - '[MESSAGE] &a&lSURVIVAL ┃ &cYou cannot execute this command!'
+        # Instead these are the commands blocked on that server.
         commands:
           - 'examplecommand3'
           - 'examplecommand4'
@@ -460,12 +469,14 @@ Manage_Commands:
 # We see that "global" is applied globally (for any world because it do not have whitelisted/blacklisted world) and "cmdgroup1" is applied only to world "survival".
 # We see that "global" has command "tp *" (blacklisted; that is group method) and "cmdgroup1" has command "tp zS0bye" (whitelisted; that is group method) included.
 # * What will this mean is that if we are on any world (even "survival") we will NOT be able to execute "/tp <anyarg1>" or even "/tp <anyarg1> <anyarg2> <anyarg3>" or
-# however many arguments after base command; although we will be able to execute "/tp" command by itself (without any arguments).
+# however many arguments after base command; although we will be able to execute "/tp" command by itself (without any arguments) as it is not handled by anything specifically
+# except that we will trigger some WHITELIST method from other groups... but if he didn't had that other group and only have this, we would be able to execute it, technically.
 # * What we will ONLY BE ABLE to execute (using arguments) is "/tp zS0bye" and ONLY if we are on "survival" world because priority for "cmdgroup1" is
-# greater than "global" and this specific commands is whitelisted in it (in "cmdgroup1" group).
-# * What we also won't be able to execute is "/tp zS0bye <anyarghere>" or any more arguments after this specific command mentioned,
-# because we have "tp * *" blacklisted and it takes priority because we are more likely that we are trying to run "tp * *" rather than "tp zS0bye <whatever>" as that
-# second one is not declared anywhere and "tp * *" is.
+# greater than "global" and this specific command ("/tp zS0bye") is whitelisted within it ("cmdgroup1" group).
+# * What we also won't be able to execute is "/tp zS0bye <anyarghere>" or any more arguments after this specific command mentioned, because we
+# have "tp * *" blacklisted and it takes priority even if its group is set to have less priority than the group containing "tp zS0bye", this happens
+# because we are having 3 args BEING EXECUTED WITHIN THE ACTUAL COMMAND, and we are first searching for that amount of args in the group, and because "cmdgroup3"
+# group has our matched amount of args, the group "cmdgroup2" is not relevant because we will still do what "cmdgroup3" allows us to do.
 
 
 #  ______________           ______             _______       ______            _________                         ______
